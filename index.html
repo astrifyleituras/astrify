@@ -10925,9 +10925,8 @@ main.container:has(#result.active) { padding-bottom: 8px; }
     }catch(e){rodaBusy=false;}
   }
   setInterval(enviarRoda,2500);
-  // Checkout só abre após o navegador concluir a transmissão do formulário.
-  // Apps Script com mode:no-cors não permite ler {ok,pedido_id}; a publicação
-  // precisa ser testada na planilha antes da primeira venda.
+  // Checkout abre em outra aba imediatamente; o quiz permanece para enviar os dados.
+  // Apps Script com mode:no-cors não confirma gravação; validar na planilha.
   function go(ev){
     if(ev) ev.preventDefault();
     if(busy) return;
@@ -10943,6 +10942,12 @@ main.container:has(#result.active) { padding-bottom: 8px; }
       alert('Confirme sua data e local de nascimento antes de continuar.'); return;
     }
     busy=true;
+    // Abre o checkout imediatamente pelo clique do usuário, antes da análise e do upload.
+    // O quiz permanece aberto para concluir o envio ao Apps Script.
+    var checkoutAba=null;
+    try { checkoutAba=window.open(CHECKOUT_URL,'_blank');
+      if(checkoutAba) checkoutAba.opener=null;
+    } catch(e){}
     var btns=['unlockTop','unlock'].map(function(id){return document.getElementById(id);}).filter(Boolean);
     btns.forEach(function(btn){btn.style.pointerEvents='none';btn.setAttribute('aria-busy','true');});
     var mapa={sol:txt('mandalaSunName'),lua:txt('mandalaMoonName'),ascendente:txt('mandalaAscName')};
@@ -10959,7 +10964,7 @@ main.container:has(#result.active) { padding-bottom: 8px; }
     function fail(){
       busy=false;
       btns.forEach(function(btn){btn.style.pointerEvents='';btn.removeAttribute('aria-busy');});
-      alert('Não foi possível transmitir seus dados com segurança. Verifique a internet e tente novamente. O pagamento ainda não foi iniciado.');
+      alert(checkoutAba ? 'A página de pagamento foi aberta, mas o envio do formulário falhou. Não conclua o pagamento antes de reenviar os dados nesta página.' : 'Não foi possível transmitir seus dados. Confira a conexão e tente novamente.');
     }
     fotoDataUrl().then(function(foto){
       if(!foto){fail();return;}
@@ -10968,7 +10973,7 @@ main.container:has(#result.active) { padding-bottom: 8px; }
       // no-cors indica conclusão do transporte, não confirmação do cadastro.
       fetch(APPS_SCRIPT_URL+'?a=pedido',{method:'POST',mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},body:body})
-        .then(function(){location.assign(CHECKOUT_URL);},fail);
+        .then(function(){if(!checkoutAba) location.assign(CHECKOUT_URL);},fail);
     }).catch(fail);
   }
   window.addEventListener('pageshow', function(e){ if(e.persisted) busy=false; });
