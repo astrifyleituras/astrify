@@ -10782,12 +10782,12 @@ main.container:has(#result.active) { padding-bottom: 8px; }
   var CHECKOUT_PROMO = 'https://lastlink.com/p/CEDE1358A/checkout-payment/'; // R$ 19,90 (primeiros 15 min)
   var CHECKOUT_FULL  = 'https://lastlink.com/p/C83904FAE/checkout-payment/'; // R$ 29,90 (depois da oferta)
   function checkoutUrl(){ var e=document.getElementById('buyPrice'); return (e && /19,90/.test(e.textContent)) ? CHECKOUT_PROMO : CHECKOUT_FULL; }
-  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxiLnkk6qJ1Hcorq6_IdEnXdHzmtqbKyZZ6eYo943Kpcc7vqJA_vpuFzpDvfvTi5v53LQ/exec';
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwoOyPwiv3qssNH21hicNI-xFwzxobM1TxgqWxd5GArUYY0CO5p1SM4i0e-2CIp58rLng/exec';
   var busy = false;
   function txt(id){ var e=document.getElementById(id); return e ? (e.textContent||'').trim() : ''; }
   // A foto é reduzida até caber no limite do keepalive (~64 KB), assim o envio continua
   // em segundo plano depois que a página vai para o checkout, sem segurar o clique.
-  var FOTO_MAX = 56000;
+  var FOTO_MAX = 40000;
   var fotoCache = { file: null, p: null };
   function encode(bmp, m, q){
     var k=Math.min(1, m/Math.max(bmp.width,bmp.height));
@@ -10809,26 +10809,167 @@ main.container:has(#result.active) { padding-bottom: 8px; }
   }
   // Prepara a foto assim que ela existir, para o clique não precisar esperar.
   setInterval(function(){ if(typeof selectedPalmFile!=='undefined' && selectedPalmFile && fotoCache.file!==selectedPalmFile) fotoDataUrl(); }, 1500);
+  // ===== Mapa completo (planetas, nodos, Lilith, Roda da Fortuna, ângulos, casas Placidus, aspectos, trânsitos e eclipses de 2027) =====
+  var SGN=['Áries','Touro','Gêmeos','Câncer','Leão','Virgem','Libra','Escorpião','Sagitário','Capricórnio','Aquário','Peixes'];
+  var ASPS=[['Conjunção',0,8],['Sextil',60,5],['Quadratura',90,7],['Trígono',120,7],['Oposição',180,8]];
+  function mapaCompleto(){
+    try{
+      var A=window.Astronomy; if(!A||typeof answers==='undefined'||!answers.birthdate) return null;
+      var D=Math.PI/180, w=function(v){return (v%360+360)%360;};
+      var known=answers.timeKnown==='yes'&&!!answers.birthtime;
+      var when=civilToUTC(answers.birthdate,known?answers.birthtime:'12:00',answers.timezone); if(!when) return null;
+      var jd=when.getTime()/86400000+2440587.5, T=(jd-2451545)/36525;
+      var pos=function(n,l){var m=w(l)%30; return {n:n,signo:SGN[Math.floor(w(l)/30)],grau:Math.floor(m),min:Math.floor((m%1)*60),lon:+w(l).toFixed(3)};};
+      var lonOf=function(b,d){return b==='Moon'?A.EclipticGeoMoon(d).lon:A.Ecliptic(A.GeoVector(b,d,true)).elon;};
+      var NM={Sun:'Sol',Moon:'Lua',Mercury:'Mercúrio',Venus:'Vênus',Mars:'Marte',Jupiter:'Júpiter',Saturn:'Saturno',Uranus:'Urano',Neptune:'Netuno',Pluto:'Plutão'};
+      var pl=Object.keys(NM).map(function(b){
+        var o=pos(NM[b],lonOf(b,when)), a=lonOf(b,new Date(when.getTime()-43200000)), c=lonOf(b,new Date(when.getTime()+43200000));
+        o.retro=b!=='Sun'&&b!=='Moon'&&(w(c-a+180)-180)<0; return o;});
+      var nn=w(125.0445479-1934.1362891*T+0.0020754*T*T);
+      pl.push(pos('Nodo Norte (médio)',nn),pos('Nodo Sul (médio)',nn+180),pos('Lilith (Lua Negra média)',83.3532465+4069.0137287*T-0.01032*T*T+180));
+      var out={horaConhecida:known,planetas:pl,aspectos:[]}, lat=Number(answers.latitude), lng=Number(answers.longitude), pts=[], hof=null;
+      if(known&&isFinite(lat)&&isFinite(lng)){
+        var ramc=w(280.46061837+360.98564736629*(jd-2451545)+0.000387933*T*T+lng), eps=23.439291-0.0130042*T, ce=Math.cos(eps*D), se=Math.sin(eps*D);
+        var lam=function(ra){return w(Math.atan2(Math.sin(ra*D),Math.cos(ra*D)*ce)/D);};
+        var mc=lam(ramc), asc=ascLongitudeUTC(when,lat,lng);
+        var cusp=function(k){var ra=ramc+({11:30,12:60,2:120,3:150})[k];
+          for(var i=0;i<40;i++){var dec=Math.asin(se*Math.sin(lam(ra)*D)), x=-Math.tan(lat*D)*Math.tan(dec); if(Math.abs(x)>=1) return null;
+            var d=Math.acos(x)/D, n=180-d, nr=k===11?ramc+d/3:k===12?ramc+2*d/3:k===2?ramc+d+n/3:ramc+d+2*n/3, done=Math.abs(w(nr-ra+180)-180)<1e-7; ra=nr; if(done) break;}
+          return lam(ra);};
+        var c=[0,asc,cusp(2),cusp(3),mc+180,0,0,asc+180,0,0,mc,cusp(11),cusp(12)];
+        var ok=[2,3,11,12].every(function(k){return c[k]!==null;}), sis='Placidus';
+        if(ok){c[5]=c[11]+180;c[6]=c[12]+180;c[8]=c[2]+180;c[9]=c[3]+180;}
+        else{sis='Signo inteiro (Placidus indisponível nesta latitude)'; for(var h=1;h<=12;h++) c[h]=Math.floor(asc/30)*30+30*(h-1);}
+        for(var h2=1;h2<=12;h2++) c[h2]=w(c[h2]);
+        hof=function(l){for(var h=1;h<=12;h++){var b=c[h%12+1]; if(w(l-c[h])<w(b-c[h])) return h;} return 1;};
+        pl.forEach(function(p){p.casa=hof(p.lon);});
+        var dia=hof(pl[0].lon)>=7, pf=pos('Roda da Fortuna',dia?asc+pl[1].lon-pl[0].lon:asc+pl[0].lon-pl[1].lon); pf.casa=hof(pf.lon); pl.push(pf);
+        out.casas=sis; out.cuspides=c.slice(1).map(function(l,i){return pos('Casa '+(i+1),l);});
+        pts=[pos('Ascendente',asc),pos('Meio do Céu',mc),pos('Descendente',asc+180),pos('Fundo do Céu',mc+180)]; out.angulos=pts;
+      }
+      var base=pl.slice(0,10).filter(function(p){return known||p.n!=='Lua';}).concat(pts.slice(0,2));
+      for(var i=0;i<base.length;i++)for(var j=i+1;j<base.length;j++){
+        if(base[i].n==='Ascendente'&&base[j].n==='Meio do Céu') continue;
+        var df=Math.abs(w(base[i].lon-base[j].lon+180)-180);
+        ASPS.forEach(function(t){var orb=Math.abs(df-t[1]); if(orb<=t[2]) out.aspectos.push({a:base[i].n,b:base[j].n,tipo:t[0],orbe:+orb.toFixed(1)});});}
+      // ---- Trânsitos lentos e eclipses de 2027 sobre o mapa natal ----
+      var fmt=function(d){return ('0'+d.getUTCDate()).slice(-2)+'/'+('0'+(d.getUTCMonth()+1)).slice(-2)+'/'+d.getUTCFullYear();};
+      var inf=function(l){var o=pos('',l); return {signo:o.signo,grau:o.grau,min:o.min,casa:hof?hof(w(l)):undefined};};
+      var alvos=base.filter(function(p){return known||p.n!=='Lua';});
+      var t0=Date.UTC(2027,0,1,12), lentos=[['Júpiter','Jupiter'],['Saturno','Saturn'],['Urano','Uranus'],['Netuno','Neptune'],['Plutão','Pluto']];
+      var tp=lentos.map(function(s){
+        var r={n:s[0],ingressos:[],aspectos:[]}, prev=null, best={}, l, d, k, l0;
+        for(k=0;k<=183;k++){ d=new Date(t0+k*2*86400000); l=w(lonOf(s[1],d)); if(k===0) r.inicio=inf(l);
+          if(prev!==null&&Math.floor(prev/30)!==Math.floor(l/30)) r.ingressos.push({signo:SGN[Math.floor(l/30)],data:fmt(d)});
+          prev=l; l0=l;
+          alvos.forEach(function(t){ var df2=Math.abs(w(l-t.lon+180)-180);
+            ASPS.forEach(function(a){ var o=Math.abs(df2-a[1]), key=t.n+'|'+a[0]; if(!best[key]||o<best[key].o) best[key]={o:o,t:t.n,tipo:a[0],data:fmt(d)}; }); }); }
+        r.fim=inf(l0);
+        Object.keys(best).forEach(function(key){var b=best[key]; if(b.o<=1) r.aspectos.push({com:b.t,tipo:b.tipo,data:b.data,orbe:+b.o.toFixed(1)});});
+        return r; });
+      var ecl=[], dI=new Date(Date.UTC(2027,0,1)), fim=Date.UTC(2028,0,1), KS={total:'total',partial:'parcial',annular:'anular',penumbral:'penumbral',hybrid:'híbrido'};
+      var addE=function(tipo,e,lunar){var d=e.peak.date, l=w(lonOf('Sun',d)+(lunar?180:0)), o=inf(l), cj=[];
+        alvos.forEach(function(t){ if(Math.abs(w(l-t.lon+180)-180)<=4) cj.push(t.n); });
+        ecl.push({tipo:tipo+' '+(KS[e.kind]||e.kind),data:fmt(d),signo:o.signo,grau:o.grau,min:o.min,casa:o.casa,conj:cj});};
+      try{ var e=A.SearchGlobalSolarEclipse(dI); while(e&&e.peak.date.getTime()<fim){ addE('Solar',e,false); e=A.NextGlobalSolarEclipse(e.peak);} }catch(x1){}
+      try{ var e2=A.SearchLunarEclipse(dI); while(e2&&e2.peak.date.getTime()<fim){ addE('Lunar',e2,true); e2=A.NextLunarEclipse(e2.peak);} }catch(x2){}
+      out.transitos={ano:2027,planetas:tp,eclipses:ecl};
+      return out;
+    }catch(e){return null;}
+  }
+  // ===== Roda do mapa astral (canvas -> PNG) =====
+  function desenharRoda(m){
+    try{
+      var c=m&&m.completo; if(!c) return '';
+      var S=720, cv=document.createElement('canvas'); cv.width=S; cv.height=S; var g=cv.getContext('2d'), cx=S/2, cy=S/2, D=Math.PI/180;
+      var known=!!c.cuspides, base=known?c.angulos[0].lon:0;
+      var ang=function(l){return (180+(l-base))*D;};
+      var P=function(l,r){var a=ang(l); return [cx+r*Math.cos(a),cy-r*Math.sin(a)];};
+      var RO=350,RS=300,RH=150,F='"Segoe UI Symbol","DejaVu Sans","Noto Sans Symbols",Arial,sans-serif';
+      g.fillStyle='#fff'; g.fillRect(0,0,S,S);
+      var EL=['#fde3d9','#e5f1d8','#fdf3cf','#dcebfa'], GS=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      for(var i=0;i<12;i++){ var a1=-ang(i*30), a2=-ang(i*30+30);
+        g.beginPath(); g.arc(cx,cy,RO,a1,a2,true); g.arc(cx,cy,RS,a2,a1,false); g.closePath(); g.fillStyle=EL[i%4]; g.fill(); g.strokeStyle='#8b7bb8'; g.lineWidth=1.5; g.stroke();
+        var q=P(i*30+15,325); g.fillStyle='#2b2140'; g.font='30px '+F; g.textAlign='center'; g.textBaseline='middle'; g.fillText(GS[i]+'\uFE0E',q[0],q[1]); }
+      g.strokeStyle='#8b7bb8'; g.lineWidth=1.5; g.beginPath(); g.arc(cx,cy,RH,0,2*Math.PI); g.stroke();
+      if(known){ for(var h=0;h<12;h++){ var cl=c.cuspides[h].lon, nx=c.cuspides[(h+1)%12].lon, p1=P(cl,RH), p2=P(cl,RS);
+          g.strokeStyle=(h===0||h===9||h===3||h===6)?'#2b2140':'#9a8cc4'; g.lineWidth=(h===0||h===9||h===3||h===6)?3:1.2; g.beginPath(); g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.stroke();
+          var mid=cl+(((nx-cl)%360+360)%360)/2, tq=P(mid,RH+18); g.fillStyle='#5b3fa0'; g.font='bold 15px Arial'; g.fillText(String(h+1),tq[0],tq[1]); }
+        g.fillStyle='#2b2140'; g.font='bold 16px Arial'; var qa=P(base,RH-18); g.fillText('ASC',qa[0],qa[1]); var qm=P(c.angulos[1].lon,RH-18); g.fillText('MC',qm[0],qm[1]); }
+      var GL={'Sol':'☉','Lua':'☽','Mercúrio':'☿','Vênus':'♀','Marte':'♂','Júpiter':'♃','Saturno':'♄','Urano':'♅','Netuno':'♆','Plutão':'♇','Nodo Norte (médio)':'☊','Roda da Fortuna':'⊕'};
+      var it=c.planetas.filter(function(p){return GL[p.n];}).map(function(p){return {p:p,d:p.lon};}).sort(function(a,b){return a.p.lon-b.p.lon;});
+      for(var k=0;k<60;k++) for(var j=0;j<it.length;j++){ var nj=(j+1)%it.length, gap=((it[nj].d-it[j].d)%360+360)%360; if(it.length>1&&gap<9){ var push=(9-gap)/2; it[j].d-=push; it[nj].d+=push; } }
+      // linhas de aspecto
+      var byN={}; c.planetas.forEach(function(p){byN[p.n]=p.lon;}); (c.angulos||[]).forEach(function(p){byN[p.n]=p.lon;});
+      (c.aspectos||[]).forEach(function(a){ if(a.tipo==='Conjunção'||byN[a.a]===undefined||byN[a.b]===undefined) return; var u=P(byN[a.a],RH-2), v=P(byN[a.b],RH-2);
+        g.strokeStyle=(a.tipo==='Trígono'||a.tipo==='Sextil')?'rgba(59,125,216,.7)':'rgba(216,59,59,.7)'; g.lineWidth=1.4; g.beginPath(); g.moveTo(u[0],u[1]); g.lineTo(v[0],v[1]); g.stroke(); });
+      it.forEach(function(o){ var t1=P(o.p.lon,RS), t2=P(o.p.lon,RS-9); g.strokeStyle='#2b2140'; g.lineWidth=1.5; g.beginPath(); g.moveTo(t1[0],t1[1]); g.lineTo(t2[0],t2[1]); g.stroke();
+        var gp=P(o.d,262), tp2=P(o.d,226); g.fillStyle=o.p.retro?'#b03030':'#2b2140'; g.font='28px '+F; g.fillText(GL[o.p.n]+'\uFE0E',gp[0],gp[1]); g.fillStyle='#5b3fa0'; g.font='13px Arial'; g.fillText(o.p.grau+'°'+(o.p.retro?'℞':''),tp2[0],tp2[1]); });
+      g.strokeStyle='#2b2140'; g.lineWidth=2.5; g.beginPath(); g.arc(cx,cy,RO,0,2*Math.PI); g.stroke(); g.beginPath(); g.arc(cx,cy,RS,0,2*Math.PI); g.stroke();
+      return cv.toDataURL('image/png');
+    }catch(e){return '';}
+  }
+  // Envia a roda assim que o mapa existe (separado do pedido, que tem limite de tamanho).
+  var rodaSig='', rodaBusy=false;
+  window.__rodaCid='';
+  function enviarRoda(){
+    try{
+      if(rodaBusy||typeof answers==='undefined'||!answers.birthdate||!answers.timezone||!window.Astronomy) return;
+      if(!isFinite(Number(answers.latitude))||answers.latitude===''||answers.latitude==null) return;
+      var sig=[answers.birthdate,answers.birthtime,answers.timeKnown,answers.timezone,answers.latitude,answers.longitude].join('|'); if(sig===rodaSig) return;
+      rodaBusy=true; var comp=mapaCompleto(); if(!comp){rodaBusy=false;return;}
+      var img=desenharRoda({completo:comp}); rodaSig=sig; window.__mapaCache={sig:sig,comp:comp};
+      if(img){ var cid=Math.random().toString(36).slice(2,10)+Date.now().toString(36); window.__rodaCid='';
+        fetch(APPS_SCRIPT_URL+'?a=roda',{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({cid:cid,img:img})}).then(function(){},function(){}); window.__rodaCid=cid; }
+      rodaBusy=false;
+    }catch(e){rodaBusy=false;}
+  }
+  setInterval(enviarRoda,2500);
+  // Checkout só abre após o navegador concluir a transmissão do formulário.
+  // Apps Script com mode:no-cors não permite ler {ok,pedido_id}; a publicação
+  // precisa ser testada na planilha antes da primeira venda.
   function go(ev){
     if(ev) ev.preventDefault();
     if(busy) return;
     var CHECKOUT_URL = checkoutUrl();
-    busy = true;
-    var done=false;
-    function redirect(){ if(done) return; done=true; location.href = CHECKOUT_URL; }
-    setTimeout(redirect, 3000);
     var a={};
     try{ a = JSON.parse(JSON.stringify(typeof answers!=='undefined' ? answers : {})); }catch(e){}
-    var mapa={ sol: txt('mandalaSunName'), lua: txt('mandalaMoonName'), ascendente: txt('mandalaAscName') };
+    var email=String(a.email||'').trim().toLowerCase();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      alert('Informe seu e-mail antes de continuar para o pagamento.'); return;
+    }
+    if(!a.birthdate || !a.timezone || a.latitude == null || a.longitude == null ||
+       a.latitude === '' || a.longitude === ''){
+      alert('Confirme sua data e local de nascimento antes de continuar.'); return;
+    }
+    busy=true;
+    var btns=['unlockTop','unlock'].map(function(id){return document.getElementById(id);}).filter(Boolean);
+    btns.forEach(function(btn){btn.style.pointerEvents='none';btn.setAttribute('aria-busy','true');});
+    var mapa={sol:txt('mandalaSunName'),lua:txt('mandalaMoonName'),ascendente:txt('mandalaAscName')};
+    var cid=window.__rodaCid||'';
+    try{
+      var sg=[answers.birthdate,answers.birthtime,answers.timeKnown,answers.timezone,answers.latitude,answers.longitude].join('|');
+      var comp=(window.__mapaCache&&window.__mapaCache.sig===sg)?window.__mapaCache.comp:mapaCompleto();
+      if(comp) mapa.completo=comp;
+    }catch(e){}
+    // Normaliza o formato exigido pelo gerador privado; preserva todos os campos originais.
+    a.place={name:[a.city,a.state,a.country].filter(Boolean).join(', '),
+             lat:Number(a.latitude),lon:Number(a.longitude),timezone:a.timezone};
+    a.birthtime=a.birthtime||'';
+    function fail(){
+      busy=false;
+      btns.forEach(function(btn){btn.style.pointerEvents='';btn.removeAttribute('aria-busy');});
+      alert('Não foi possível transmitir seus dados com segurança. Verifique a internet e tente novamente. O pagamento ainda não foi iniciado.');
+    }
     fotoDataUrl().then(function(foto){
-      var body=JSON.stringify({answers:a,mapa:mapa,foto:foto});
-      var bg = body.length < 63000;
-      var req = fetch(APPS_SCRIPT_URL+'?a=pedido',{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:body,keepalive:bg});
-      // Com keepalive o navegador termina o envio sozinho: vai direto ao checkout.
-      if(bg) redirect(); else req.then(redirect,redirect);
-    }, redirect);
+      if(!foto){fail();return;}
+      var body=JSON.stringify({answers:a,mapa:mapa,foto:foto,cid:cid});
+      // Sem keepalive: aguarda a resposta HTTP antes de deixar a página.
+      // no-cors indica conclusão do transporte, não confirmação do cadastro.
+      fetch(APPS_SCRIPT_URL+'?a=pedido',{method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},body:body})
+        .then(function(){location.assign(CHECKOUT_URL);},fail);
+    }).catch(fail);
   }
   window.addEventListener('pageshow', function(e){ if(e.persisted) busy=false; });
   ['unlockTop','unlock'].forEach(function(id){
