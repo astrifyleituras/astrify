@@ -10930,7 +10930,10 @@ main.container:has(#result.active) { padding-bottom: 8px; }
   function go(ev){
     if(ev) ev.preventDefault();
     if(busy) return;
-    var CHECKOUT_URL = checkoutUrl();
+    // Código único deste pedido: vai no link do checkout (utm_content) e junto com os dados.
+    // A Lastlink devolve esse código no aviso de pagamento, então o pedido é achado sem depender do e-mail.
+    var pid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12));
+    var CHECKOUT_URL = checkoutUrl() + (checkoutUrl().indexOf('?') < 0 ? '?' : '&') + 'utm_content=' + encodeURIComponent(pid);
     var a={};
     try{ a = JSON.parse(JSON.stringify(typeof answers!=='undefined' ? answers : {})); }catch(e){}
     var email=String(a.email||'').trim().toLowerCase();
@@ -10968,7 +10971,7 @@ main.container:has(#result.active) { padding-bottom: 8px; }
     }
     fotoDataUrl().then(function(foto){
       if(!foto){fail();return;}
-      var body=JSON.stringify({answers:a,mapa:mapa,foto:foto,cid:cid});
+      var body=JSON.stringify({answers:a,mapa:mapa,foto:foto,cid:cid,pid:pid});
       // Sem keepalive: aguarda a resposta HTTP antes de deixar a página.
       // no-cors indica conclusão do transporte, não confirmação do cadastro.
       fetch(APPS_SCRIPT_URL+'?a=pedido',{method:'POST',mode:'no-cors',
