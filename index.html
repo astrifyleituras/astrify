@@ -4973,6 +4973,26 @@
 @keyframes rvShP{0%,100%{transform:scale(.97,.95);opacity:.8}50%{transform:scale(1.03,1.05);opacity:1}}
 @media (prefers-reduced-motion:reduce){.reviews-step .rv-dev,.reviews-step .rv-sh{animation:none}}
 </style>
+<style id="astrify-info-step">
+/* A etapa usa a classe reviews-step, que já tem altura automática (não estica as outras etapas) */
+#quiz>.step.info-step.active{display:block;height:auto;min-height:0;text-align:center}
+.info-step .info-icon{font-size:44px;line-height:1;margin:2px 0 10px;filter:drop-shadow(0 4px 14px rgba(173,139,255,.55))}
+.info-step .info-title{font:700 clamp(20px,5vw,26px)/1.25 'Playfair Display',Georgia,serif;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;margin:0 0 10px}
+.info-step .info-sub{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 auto 20px;max-width:430px}
+.info-video{position:relative;width:min(100%,300px);aspect-ratio:9/16;margin:0 auto 24px;border-radius:18px;overflow:hidden;border:1px solid #f3d49a66;background:#0d0a1c;box-shadow:0 12px 30px rgba(0,0,0,.5),0 0 28px rgba(173,139,255,.18)}
+.info-video iframe,.info-video video{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover;background:#000}
+.info-video-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#bcb0d0;font-size:12.5px;padding:16px}
+.info-video-ph span{font-size:38px;color:var(--gold)}
+.info-list{display:grid;gap:10px;text-align:left;margin:0 0 22px}
+.info-item{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;padding:12px 14px;border:1px solid #ad8bff33;border-radius:14px;background:#ffffff06;font-size:13.5px;line-height:1.45;color:#e7daf5}
+.info-item i{font-style:normal;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid #f3d49a55;background:#f3d49a12;font-size:18px}
+.info-item b{color:var(--gold)}
+.info-box{border:1px solid #ad8bff40;border-radius:18px;padding:18px 16px;margin:0 0 22px;background:linear-gradient(145deg,#261942cc,#181329cc);text-align:left}
+.info-box h3{font:700 16px/1.3 'Playfair Display',Georgia,serif;color:var(--gold);text-align:center;text-transform:uppercase;letter-spacing:.5px;margin:0 0 12px}
+.info-box ul{list-style:none;margin:0 auto;padding:0;display:grid;gap:8px;width:fit-content;max-width:100%}
+.info-box li{position:relative;padding-left:26px;font-size:13.5px;line-height:1.45;color:#e7daf5}
+.info-box li::before{content:"✓";position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#2fe8ae;background:#2fe8ae1a;border:1px solid #2fe8ae55}
+</style>
 </head>
 
 <body class="landing-mode">
@@ -5503,7 +5523,40 @@
                         <div><strong>4.9/5</strong><span>Avaliação média</span></div>
                     </div>
                 </div>
-                <div class="step" data-index="17">
+                <div class="step reviews-step info-step" data-index="17" id="accessInfoStep">
+    <div class="info-icon" aria-hidden="true">🔮</div>
+    <h2 class="info-title">Como você receberá sua leitura</h2>
+    <p class="info-sub">Após a confirmação do pagamento, sua leitura personalizada será preparada e enviada por e-mail em até 24 horas.</p>
+
+    <div class="info-video" data-video="acesso" data-title="Como você receberá sua leitura">
+        <div class="info-video-ph"><span>▶</span>Vídeo 1 em breve</div>
+    </div>
+
+    <div class="info-list">
+        <div class="info-item"><i aria-hidden="true">📩</i><div><b>Envio por e-mail</b> com a sua leitura completa</div></div>
+        <div class="info-item"><i aria-hidden="true">⏳</i><div><b>Entrega em até 24 horas</b> após a aprovação do pagamento</div></div>
+        <div class="info-item"><i aria-hidden="true">✨</i><div><b>Leitura personalizada</b> com seus dados de nascimento e suas respostas</div></div>
+        <div class="info-item"><i aria-hidden="true">📱</i><div><b>Material digital</b> para ler quando e onde quiser</div></div>
+        <div class="info-item"><i aria-hidden="true">🛡️</i><div><b>Garantia de 7 dias</b> para você comprar com tranquilidade</div></div>
+    </div>
+
+    <div class="info-box">
+        <h3>O que você encontrará na sua leitura</h3>
+        <ul>
+            <li>Mapa astral personalizado e mandala astral</li>
+            <li>Compatibilidade amorosa</li>
+            <li>Previsões astrológicas para 2027</li>
+            <li>Amor, carreira e prosperidade</li>
+            <li>Leitura da palma da mão</li>
+            <li>Bônus exclusivos para aprofundar sua jornada</li>
+        </ul>
+    </div>
+
+    <div class="info-video" data-video="conteudo" data-title="Veja o que você vai receber">
+        <div class="info-video-ph"><span>▶</span>Vídeo 2 em breve</div>
+    </div>
+</div>
+                <div class="step" data-index="18">
                     <div class="signup-visual" aria-hidden="true">
                         <div class="signup-visual-orb">☾ <span>✧</span></div>
                         <div class="signup-visual-lines"><i></i><i></i><i></i><i></i></div>
@@ -5522,13 +5575,13 @@
                             novidades, conteúdos e ofertas da Astrify por e-mail. Posso cancelar a inscrição quando
                             quiser.</span></label>
                 </div>
-                <div class="step" data-index="18">
+                <div class="step" data-index="19">
                     <h2>Como podemos chamar você?</h2>
                     <p class="desc">Seu nome aparecerá na capa da sua leitura personalizada.</p><label
                         class="fieldlabel" for="name">Seu primeiro nome</label><input class="field" id="name"
                         placeholder="Ex.: Marina" maxlength="60" autocomplete="given-name">
                 </div>
-                <div class="step" data-index="19" id="finalAnalysisStep">
+                <div class="step" data-index="20" id="finalAnalysisStep">
                     <div class="final-analysis-screen">
                         <span class="pill">✦ SEU PERFIL ASTRIFY</span>
                         <h2>Organizando sua leitura personalizada...</h2>
@@ -6745,11 +6798,11 @@
                 items.forEach(x => { x.classList.remove('reading'); x.classList.add('ready') });
                 fill.style.width = '100%'; $('finalAnalysisCount').textContent = 'Informações organizadas'; meter.setAttribute('aria-valuenow', '100');
                 $('finalAnalysisLast').textContent = 'Sua experiência está pronta!';
-                finalAnalysisTimeout = setTimeout(() => { if (current === 19) showResult() }, reduce ? 400 : 1100);
+                finalAnalysisTimeout = setTimeout(() => { if (current === 20) showResult() }, reduce ? 400 : 1100);
             };
             if (reduce) { finish(); return; }
             function frame(ts) {
-                if (current !== 19) return; if (started === null) started = ts;
+                if (current !== 20) return; if (started === null) started = ts;
                 const p = Math.min(1, (ts - started) / duration), percent = Math.round(p * 100);
                 fill.style.width = percent + '%'; $('finalAnalysisCount').textContent = `Organizando ${percent}%`; meter.setAttribute('aria-valuenow', String(percent));
                 const active = Math.min(items.length - 1, Math.floor(p * items.length));
@@ -6802,7 +6855,7 @@
             const width = (active && active.getBoundingClientRect().width) || quiz.getBoundingClientRect().width;
             if (!width) return;
             const actionsTemplate = $('quizActions'), errorTemplate = $('error');
-            const noActionSteps = new Set([0, 14, 15, 19]);
+            const noActionSteps = new Set([0, 14, 15, 20]);
             const autoAdvanceSteps = new Set([0, 6, 8, 9, 12]);
             let maxHeight = 0;
             steps.forEach((step, index) => {
@@ -6913,10 +6966,22 @@
             if (current === 4) startMandalaLoading();
             if (current === 10) showIdentityCard();
             if (current === 11) startCosmicProgress76();
-            actions.classList.toggle('hidden', current === 0 || current === 14 || current === 15 || current === 19);
+            actions.classList.toggle('hidden', current === 0 || current === 14 || current === 15 || current === 20);
             if (current === 14) startPalmReading(); else stopPalmReading();
             if (current === 15) startPalmResultsProgress();
-            if (current === 19) startFinalAnalysis();
+            if (current === 20) startFinalAnalysis();
+            /* Etapa dos vídeos (18 de 21): sempre abre no topo, no primeiro texto, e não no meio da página. */
+            if (current === 17) {
+                const toTop = () => {
+                    const root = document.documentElement, prev = root.style.scrollBehavior;
+                    root.style.scrollBehavior = 'auto';
+                    window.scrollTo(0, 0); root.scrollTop = 0; document.body.scrollTop = 0;
+                    root.style.scrollBehavior = prev;
+                };
+                toTop();
+                requestAnimationFrame(() => { toTop(); requestAnimationFrame(toTop); });
+                setTimeout(toTop, 120);
+            }
             requestAnimationFrame(animateCurrentStepButtons);
         }
 
@@ -6929,8 +6994,8 @@
             if (current === 2) { if (!answers.timeKnown) return err('Selecione uma opção.'); answers.birthtime = answers.timeKnown === 'yes' ? $('birthtime').value : ''; if (answers.timeKnown === 'yes' && !answers.birthtime) return err('Informe o horário ou selecione “Não sei o horário”.'); }
             if (current === 3) { if (!selectedPlace || $('city').value !== selectedPlace.displayName || $('country').value !== selectedPlace.country) return err('Selecione uma cidade existente nas sugestões para confirmar cidade e país.'); answers.city = selectedPlace.displayName; answers.state = selectedPlace.state; answers.country = selectedPlace.country; answers.latitude = selectedPlace.latitude; answers.longitude = selectedPlace.longitude; answers.countryCode = selectedPlace.country_code; answers.timezone = selectedPlace.timezone; }
             if (current === 13) { const f = selectedPalmFile; if (!f) return err('Desculpe, mas não conseguimos identificar uma mão na foto'); if (!f.type.startsWith('image/') || f.size > 10 * 1024 * 1024) return err('Selecione uma imagem de até 10 MB.'); answers.palmProvided = true; }
-            if (current === 18) { answers.name = $('name').value.trim(); if (answers.name.length < 2) return err('Informe seu primeiro nome.'); }
-            if (current === 17) { answers.email = $('email').value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.email)) return err('Informe um e-mail válido.'); answers.marketingConsent = $('marketingConsent').checked; } return true
+            if (current === 19) { answers.name = $('name').value.trim(); if (answers.name.length < 2) return err('Informe seu primeiro nome.'); }
+            if (current === 18) { answers.email = $('email').value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.email)) return err('Informe um e-mail válido.'); answers.marketingConsent = $('marketingConsent').checked; } return true
         }
         let selectedPalmFile = null, palmPreviewUrl = null;
         function updatePalmFile(file) {
@@ -10983,6 +11048,30 @@ main.container:has(#result.active) { padding-bottom: 8px; }
   ['unlockTop','unlock'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.addEventListener('click',go);
   });
+})();
+</script>
+<script id="astrify-info-videos">
+window.ASTRIFY_VIDEOS = {
+    acesso: 'https://vimeo.com/1243082578/9c85e315d6',    // vídeo 1 (Como você receberá)
+    conteudo: 'https://vimeo.com/1243083441/49f5f55402'   // vídeo 2 (O que você vai encontrar)
+};
+(function () {
+    function toEmbed(u) {
+        u = (u || '').trim(); if (!u) return null;
+        var m = u.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-z0-9]+))?/i);
+        if (m) return { t: 'i', s: 'https://player.vimeo.com/video/' + m[1] + '?' + (m[2] ? 'h=' + m[2] + '&' : '') + 'title=0&byline=0&portrait=0&playsinline=1' };
+        m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+        if (m) return { t: 'i', s: 'https://www.youtube.com/embed/' + m[1] + '?rel=0&playsinline=1' };
+        if (/\.(mp4|webm|mov)(\?|$)/i.test(u)) return { t: 'v', s: u };
+        return { t: 'i', s: u };
+    }
+    document.querySelectorAll('.info-video[data-video]').forEach(function (box) {
+        var cfg = toEmbed(window.ASTRIFY_VIDEOS[box.dataset.video]); if (!cfg) return;
+        var el;
+        if (cfg.t === 'v') { el = document.createElement('video'); el.src = cfg.s; el.controls = true; el.playsInline = true; el.preload = 'metadata'; }
+        else { el = document.createElement('iframe'); el.src = cfg.s; el.allow = 'autoplay; fullscreen; picture-in-picture'; el.allowFullscreen = true; el.loading = 'lazy'; el.title = box.dataset.title || 'Vídeo'; }
+        box.replaceChildren(el);
+    });
 })();
 </script>
 </body>
